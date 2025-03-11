@@ -1,0 +1,204 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2818
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 -- First table (completed_district)\
+CREATE TABLE completed_district(\
+    district_id SMALLINT PRIMARY KEY,\
+    city VARCHAR(100) NOT NULL,\
+    state_name VARCHAR(100) NOT NULL,\
+    state_abbrev VARCHAR(2) NOT NULL,\
+    region VARCHAR(50) NOT NULL\
+);\
+\
+-- Second table (completed_account)\
+CREATE TABLE completed_account(\
+    account_id VARCHAR(50) PRIMARY KEY,\
+    district_id SMALLINT NOT NULL,\
+    frequency VARCHAR(50) NOT NULL,\
+    parsed_date DATE NOT NULL,\
+    month SMALLINT NOT NULL CHECK (month BETWEEN 1 AND 12),\
+    day SMALLINT NOT NULL CHECK (day BETWEEN 1 AND 31),\
+    FOREIGN KEY (district_id) REFERENCES completed_district(district_id)\
+);\
+\
+-- Third table (completed_loan)\
+CREATE TABLE completed_loan(\
+    loan_id VARCHAR(50) PRIMARY KEY,\
+    account_id VARCHAR(50) NOT NULL,\
+    amount NUMERIC(15,2) NOT NULL CHECK (amount > 0),\
+    duration SMALLINT NOT NULL CHECK (duration > 0),\
+    payments NUMERIC(15,2) NOT NULL,\
+    status CHAR(1) NOT NULL,\
+    year SMALLINT NOT NULL,\
+    month SMALLINT NOT NULL CHECK (month BETWEEN 1 AND 12),\
+    day SMALLINT NOT NULL CHECK (day BETWEEN 1 AND 31),\
+    full_date DATE NOT NULL,\
+    location SMALLINT,\
+    purpose VARCHAR(200),\
+    FOREIGN KEY (account_id) REFERENCES completed_account(account_id)\
+);\
+\
+-- Fourth table (completed_transactions)\
+CREATE TABLE completed_transactions(\
+    trans_id VARCHAR(50) PRIMARY KEY,\
+    account_id VARCHAR(50) NOT NULL,\
+    type VARCHAR(50) NOT NULL,\
+    operation VARCHAR(50) NOT NULL,\
+    amount NUMERIC(15,2) NOT NULL,\
+    balance NUMERIC(15,2) NOT NULL,\
+    k_symbol VARCHAR(50),\
+    bank VARCHAR(50),\
+    account VARCHAR(50),\
+    year SMALLINT NOT NULL,\
+    month SMALLINT NOT NULL CHECK (month BETWEEN 1 AND 12),\
+    day SMALLINT NOT NULL CHECK (day BETWEEN 1 AND 31),\
+    full_date DATE NOT NULL,\
+    full_time TIME NOT NULL,\
+    full_date_with_time TIMESTAMP NOT NULL,\
+    FOREIGN KEY (account_id) REFERENCES completed_account(account_id)\
+);\
+\
+-- Fifth table (completed_order)\
+CREATE TABLE completed_order(\
+    order_id SMALLINT PRIMARY KEY,\
+    account_id VARCHAR(50) NOT NULL,\
+    bank_to VARCHAR(50) NOT NULL,\
+    account_to BIGINT NOT NULL,\
+    amount NUMERIC(15,2) NOT NULL CHECK (amount > 0),\
+    k_symbol VARCHAR(50),\
+    FOREIGN KEY (account_id) REFERENCES completed_account(account_id)\
+);\
+\
+-- Sixth table (completed_client)\
+CREATE TABLE completed_client(\
+    client_id VARCHAR(50),\
+    social VARCHAR(20),\
+    sex VARCHAR(10) NOT NULL,\
+    full_date DATE NOT NULL,\
+    day SMALLINT NOT NULL CHECK (day BETWEEN 1 AND 31),\
+    month SMALLINT NOT NULL CHECK (month BETWEEN 1 AND 12),\
+    year SMALLINT NOT NULL,\
+    age SMALLINT NOT NULL CHECK (age >= 0),\
+    first_name VARCHAR(50) NOT NULL,\
+    middle_name VARCHAR(50),\
+    last_name VARCHAR(50) NOT NULL,\
+    phone VARCHAR(20),\
+    email VARCHAR(100),\
+    address_1 VARCHAR(200) NOT NULL,\
+    address_2 VARCHAR(200),\
+    city VARCHAR(100) NOT NULL,\
+    state VARCHAR(2) NOT NULL,\
+    zip_code VARCHAR(10) NOT NULL,\
+    district_id SMALLINT NOT NULL,\
+    PRIMARY KEY (client_id),  -- Changed to single primary key\
+    UNIQUE (client_id, social),  -- Added unique constraint\
+    FOREIGN KEY (district_id) REFERENCES completed_district(district_id)\
+);\
+\
+-- Seventh table (completed_disposition)\
+CREATE TABLE completed_disposition(\
+    disp_id VARCHAR(50) PRIMARY KEY,\
+    client_id VARCHAR(50) NOT NULL,\
+    account_id VARCHAR(50) NOT NULL,\
+    type VARCHAR(50) NOT NULL,\
+    FOREIGN KEY (client_id) REFERENCES completed_client(client_id),\
+    FOREIGN KEY (account_id) REFERENCES completed_account(account_id)\
+);\
+\
+-- Eighth table (completed_card)\
+CREATE TABLE completed_card(\
+    card_id VARCHAR(50),\
+    disp_id VARCHAR(50),\
+    type VARCHAR(50) NOT NULL,\
+    year SMALLINT NOT NULL,\
+    month SMALLINT NOT NULL CHECK (month BETWEEN 1 AND 12),\
+    day SMALLINT NOT NULL CHECK (day BETWEEN 1 AND 31),\
+    full_date DATE NOT NULL,\
+    PRIMARY KEY (card_id, disp_id),\
+    FOREIGN KEY (disp_id) REFERENCES completed_disposition(disp_id)\
+);\
+\
+-- Ninth table (crm_call_center_logs)\
+CREATE TABLE crm_call_center_logs(\
+    date_received DATE NOT NULL,\
+    complaint_id VARCHAR(50) PRIMARY KEY,\
+    rand_client VARCHAR(50) NOT NULL,\
+    phone_final VARCHAR(20),\
+    vru_line VARCHAR(50),\
+    call_id INTEGER NOT NULL,\
+    priority SMALLINT NOT NULL,\
+    type VARCHAR(50) NOT NULL,\
+    outcome VARCHAR(50),\
+    server VARCHAR(50),\
+    ser_start TIME,\
+    ser_exit TIME,\
+    ser_time TIME,\
+    FOREIGN KEY (rand_client) REFERENCES completed_client(client_id)\
+);\
+\
+-- Tenth table (luxury_loan_portfolio)\
+CREATE TABLE luxury_loan_portfolio(\
+    loan_id VARCHAR(50) PRIMARY KEY,\
+    funded_amount NUMERIC(15,2) NOT NULL CHECK (funded_amount > 0),\
+    funded_date DATE NOT NULL,\
+    duration_years SMALLINT NOT NULL CHECK (duration_years > 0),\
+    duration_months SMALLINT NOT NULL CHECK (duration_months BETWEEN 1 AND 12),\
+    ten_yr_treasury_index_date_funded FLOAT,\
+    interest_rate_percent FLOAT NOT NULL CHECK (interest_rate_percent >= 0),\
+    interest_rate FLOAT NOT NULL CHECK (interest_rate >= 0),\
+    payments NUMERIC(15,2) NOT NULL,\
+    total_past_payments SMALLINT NOT NULL CHECK (total_past_payments >= 0),\
+    loan_balance DOUBLE PRECISION NOT NULL,\
+    property_value DOUBLE PRECISION NOT NULL CHECK (property_value > 0),\
+    purpose TEXT,\
+    first_name VARCHAR(50) NOT NULL,\
+    middle_name VARCHAR(50),\
+    last_name VARCHAR(50) NOT NULL,\
+    client_id VARCHAR(50) NOT NULL,\
+    social VARCHAR(20) NOT NULL,\
+    phone VARCHAR(20),\
+    title TEXT,\
+    FOREIGN KEY (client_id) REFERENCES completed_client(client_id)\
+);\
+\
+\
+-- Eleventh table (crm_reviews)\
+CREATE TABLE crm_reviews(\
+    review_id SERIAL PRIMARY KEY,\
+    date DATE NOT NULL,\
+    stars CHAR(1) CHECK (stars IN ('1', '2', '3', '4', '5')),\
+    reviews TEXT\
+);\
+\
+-- Twelfth table (crm_events)\
+CREATE TABLE crm_events(\
+    event_id SERIAL PRIMARY KEY,\
+    date_received DATE NOT NULL,\
+    product VARCHAR(100) NOT NULL,\
+    sub_product VARCHAR(100),\
+    issue VARCHAR(200) NOT NULL,\
+    sub_issue VARCHAR(200),\
+    consumer_complaint_narrative TEXT\
+);\
+\
+-- Create indexes for better query performance\
+CREATE INDEX idx_account_district ON completed_account(district_id);\
+CREATE INDEX idx_loan_account ON completed_loan(account_id);\
+CREATE INDEX idx_transaction_account ON completed_transactions(account_id);\
+CREATE INDEX idx_order_account ON completed_order(account_id);\
+CREATE INDEX idx_client_district ON completed_client(district_id);\
+CREATE INDEX idx_disposition_client ON completed_disposition(client_id);\
+CREATE INDEX idx_disposition_account ON completed_disposition(account_id);\
+CREATE INDEX idx_card_disp ON completed_card(disp_id);\
+CREATE INDEX idx_call_center_client ON crm_call_center_logs(rand_client);\
+CREATE INDEX idx_luxury_loan_social ON luxury_loan_portfolio(social);\
+DROP INDEX IF EXISTS idx_luxury_loan_social;\
+CREATE INDEX idx_luxury_loan_client ON luxury_loan_portfolio(client_id, social);\
+\
+\
+\
+}
